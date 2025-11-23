@@ -1,8 +1,8 @@
-import { registerRootComponent } from 'expo';
+// index.tsx (veya index.js)
 
+import { registerRootComponent } from 'expo';
 import App from './App';
 
-// registerRootComponent calls AppRegistry.registerComponent('main', () => App);
-// It also ensures that whether you load the app in Expo Go or in a native build,
-// the environment is set up appropriately
+// App componentini root olarak kaydeder.
+// iOS / Android / web hepsinde bunu kullanır.
 registerRootComponent(App);
