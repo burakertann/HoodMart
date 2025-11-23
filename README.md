@@ -198,3 +198,23 @@ index.ts → App.tsx → RootNavigator → SplashScreen → LoginScreen → ...
 - Animasyon bittiğinde `navigation.replace('Login')` ile Login ekranına geçilir  
 
 ---
+
+# Repoyu kendi bilgisayarlarına klonlarlar
+```bash
+git clone https://github.com/burakertann/HoodMart.git
+cd HoodMart
+```
+# Yeni feature branch açarlar
+```bash
+git checkout -b feature/<isim>
+```
+# Değişiklik yaparlar
+```bash
+git add .
+git commit -m "feat: login screen ui improvements"
+```
+
+# Kendi branch'lerine push
+```bash
+git push -u origin feature/<isim>
+```
