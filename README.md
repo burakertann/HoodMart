@@ -218,3 +218,5 @@ git commit -m "feat: login screen ui improvements"
 ```bash
 git push -u origin feature/<isim>
 ```
+
+hako klonladı
