@@ -1,3 +1,8 @@
+import React from "react";
+import {View,Text,ScrollView,StyleSheet,TextInput,StatusBar,SafeAreaView} from "react-native";
+import ItemCard from "../../components/ItemCard";
+
+
 export default function Home() {
     // Veriler için state
     const [data, setData] = useState([]);
