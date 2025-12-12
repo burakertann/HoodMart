@@ -22,8 +22,5 @@ const styles = StyleSheet.create({
         shadowOffset:"2,2",
         shadowColor:"#000",
         borderRadius:10
-    },
-    image:{
-        
     }
-)
+})

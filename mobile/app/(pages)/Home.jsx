@@ -1,7 +1,7 @@
 import React from "react";
 import {View,Text,ScrollView,StyleSheet,TextInput,StatusBar,SafeAreaView} from "react-native";
 import ItemCard from "../../components/ItemCard";
-
+import { Platform } from "react-native";
 
 export default function Home() {
     // Veriler için state
