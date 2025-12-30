@@ -12,7 +12,8 @@ export default function StringForm(props){
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({text}),
-      })
+      });
+      router.replace("../Home.jsx");
     }
 
 
