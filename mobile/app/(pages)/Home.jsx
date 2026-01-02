@@ -1,101 +1,118 @@
-import React from "react";
-import {View,Text,ScrollView,StyleSheet,TextInput,StatusBar,SafeAreaView} from "react-native";
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  TextInput,
+  StatusBar,
+  SafeAreaView,
+  FlatList,
+  ActivityIndicator,
+  Platform,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import ItemCard from "../../components/ItemCard";
-import { Platform } from "react-native";
 
 export default function Home() {
-    // Veriler için state
-    const [data, setData] = useState([]);
-    // Arama kutusuna yazılan yazı için state
-    const [searchText, setSearchText] = useState("");
+  const [data, setData] = useState([]);
+  const [searchText, setSearchText] = useState("");
 
-    useEffect(() => {
-        const fetching = async () => {
-            try {
-                // SENİN API KODUN
-                const response = await fetch("api");
-                const result = await response.json();
-                setData(result);
-            } catch (error) {
-                console.log(error);
-            }
-        }
-        fetching();
-    }, []);
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
 
-    return (
-        // 1. Ana Kapsayıcı (Gri arka plan)
-        <View style={styles.container}>
-            
-            {/* 2. Mavi Üst Kısım (Header) */}
-            <View style={styles.headerBackground}>
-                <SafeAreaView>
-                    <View style={styles.searchContainer}>
-                        {/* Arama İkonu */}
-                        <Ionicons name="search" size={20} color="#666" style={{marginRight: 10}} />
-                        
-                        {/* Yazı Kutusu */}
-                        <TextInput
-                            style={styles.searchInput}
-                            placeholder="Ara..."
-                            placeholderTextColor="#999"
-                            value={searchText}
-                            onChangeText={setSearchText}
-                        />
-                    </View>
-                </SafeAreaView>
-            </View>
+  const LIMIT = 10;
 
-            {/* 3. Senin Listen (ScrollView) */}
-            <ScrollView style={styles.scrollView}>
-                {data.map((element, index) => {
-                    return (
-                        <ItemCard 
-                            key={index} 
-                            name={element.name} 
-                            imageName={element.ImageName}
-                            price={element.price}
-                        />
-                    );
-                })}
-            </ScrollView>
+  // ----------------------------------
+  // VERİ ÇEKME
+  // ----------------------------------
+  const fetchData = async (reset = false) => {
+    if (loading || (!hasMore && !reset)) return;
 
-            {/* Android üst çubuk rengini mavi yapar */}
-            <StatusBar style="light" backgroundColor="#2196F3" />
-        </View>
-    );
-}
+    setLoading(true);
 
+    try {
+      const response = await fetch(
+        `http://localhost:3000/api/Home?page=${reset ? 1 : page}&limit=${LIMIT}&search=${searchText}`
+      );
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1, // Sayfanın tamamını kapla
-        backgroundColor: '#f5f5f5',
-    },
-    headerBackground: {
-        backgroundColor: '#2196F3', // MAVİ RENK
-        paddingBottom: 15,
-        // Android'de çentiğin altında kalmasın diye üstten boşluk bırakıyoruz:
-        paddingTop: Platform.OS === 'android' ? 40 : 0, 
-        borderBottomLeftRadius: 20, // Alt köşeleri yuvarlatma
-        borderBottomRightRadius: 20,
-    },
-    searchContainer: {
-        flexDirection: 'row', // Yan yana diz (ikon + input)
-        backgroundColor: 'white',
-        marginHorizontal: 15, // Kenarlardan boşluk
-        padding: 10,
-        borderRadius: 10,
-        alignItems: 'center',
-        height: 45,
-    },
-    searchInput: {
-        flex: 1,
-        color: '#333',
-        height: '100%',
-    },
-    scrollView: {
-        flex: 1,
-        marginTop: 10, // Listeyi header'dan biraz ayır
+      const result = await response.json();
+
+      if (result.length < LIMIT) {
+        setHasMore(false);
+      }
+
+      setData(prev =>
+        reset ? result : [...prev, ...result]
+      );
+
+      setPage(prev => reset ? 2 : prev + 1);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
     }
-});
+  };
+
+  // ----------------------------------
+  // İLK AÇILIŞ
+  // ----------------------------------
+  useEffect(() => {
+    fetchData(true);
+  }, []);
+
+  // ----------------------------------
+  // SEARCH DEBOUNCE
+  // ----------------------------------
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setHasMore(true);
+      setPage(1);
+      fetchData(true);
+    }, 300);
+
+    return () => clearTimeout(timeout);
+  }, [searchText]);
+
+  // ----------------------------------
+  // LOADING FOOTER
+  // ----------------------------------
+  const renderFooter = () => {
+    if (!loading) return null;
+    return <ActivityIndicator size="large" color="#2196F3" />;
+  };
+
+  return (
+    <View style={{ flex: 1 }}>
+      <View style={{ paddingTop: Platform.OS === "android" ? 40 : 0 }}>
+        <SafeAreaView>
+          <View style={{ flexDirection: "row" }}>
+            <Ionicons name="search" size={20} />
+            <TextInput
+              placeholder="Ara..."
+              value={searchText}
+              onChangeText={setSearchText}
+            />
+          </View>
+        </SafeAreaView>
+      </View>
+
+      <FlatList
+        data={data}
+        keyExtractor={(item, index) => index.toString()}
+        renderItem={({ item }) => (
+          <ItemCard
+            name={item.item_name}
+            imageName={item.ImageName}
+            price={item.price}
+            profilePic={item.profile_pic}
+            userName={item.user_name}
+          />
+        )}
+        onEndReached={() => fetchData()}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={renderFooter}
+      />
+
+      <StatusBar style="light" />
+    </View>
+  );
+}

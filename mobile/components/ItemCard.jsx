@@ -4,12 +4,18 @@ import { View,Text,Image,StyleSheet} from "react-native";
 
 export default function ItemCard(props){
     return(
-        <View>
-            <Image source={{uri:props.imageName}}></Image>
+        <View style ={styles.container}>
+            <View style = {styles.header}>
+                <Image source ={{uri:props.profilePic}} style = {styles.profilePic}></Image>
+                <Text>{props.userName}</Text>
+            </View>
+            <Image source={{uri:props.imageName}} style = {styles.itemPic}></Image>
             <Text>{props.name}</Text>
+            <Text>{props.adress}</Text> 
             <Text>{props.price}</Text>
+
         </View>
-    );
+    );//adress kısmına bakacaksın
 }
 
 const styles = StyleSheet.create({
@@ -22,5 +28,22 @@ const styles = StyleSheet.create({
         shadowOffset:"2,2",
         shadowColor:"#000",
         borderRadius:10
+    },
+    header:{
+        position:"absolute",
+        height:10,
+        width:"100%",
+        flexDirection:"row",
+        justifyContent:"flex-start",
+        gap:5,
+    },
+    profilePic:{
+        height:3,
+        width:3,
+        borderRadius:"50%"
+    },
+    itemPic:{
+        height:50,
+        width:"100%"
     }
 })

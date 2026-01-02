@@ -1,40 +1,91 @@
-import { ScrollView, View ,Text} from "react-native";
-import React from "react";
+export default function Rental() {
+  const router = useRouter();
+  const [data1, setData1] = React.useState([]);
+  const [data2, setData2] = React.useState([]);
+  
+  React.useEffect(() => {
+    const fetchData = async () => {
+      const token = await localStorage.getItem("token");
+      
+      const res1 = await fetch(`http://localhost:3000/api/Rental?flag=1`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setData1(await res1.json());
+      
+      const res2 = await fetch(`http://localhost:3000/api/Rental?flag=0`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setData2(await res2.json());
+    };
 
-export default function Rental(){
+    fetchData();
+  }, []);
 
-    const fetching = async ()=>{
-        const response = await fetch("api");
-        const data = await response.json();
-        return data;
+  async function handleAddItem() {
+    const token = await localStorage.getItem("token");
+
+    const response = await fetch("http://localhost:3000/api/users/address-check", {
+      method: "GET",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    });
+
+    const data = await response.json();
+
+    if (!data.hasAddress) {
+      alert("Ürün eklemek için önce adres eklemelisin");
+      return;
     }
-    
-    const data = fetching();
-    //if ile kontrol yapılıp ona göre view'ler yazılmalı
+
+    router.push("/Forms/AddItem");
+  }
+
+  async function handleDelete(itemId){
+    const token = await localStorage.getItem("token");
+
+    const response = await fetch(`http://localhost:3000/api/items/delete-item/${itemId}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    });
+
+    const data = await response.json();
+    console.log(data);
+  }
+
+  async function handleAvailability(){
+    console.log("fuck you");
+  }
+
+  return (
     <ScrollView>
-        <View id="myRenteds">
-            {data.map((element, index) => {
-            return (
-                <ItemCard 
-                     key={index} 
-                     name={element.name} 
-                     imageName={element.ImageName}
-                     price={element.price}
-                />
-            );
-        })}
-        </View>
-        <View id="onesIRented">
-            {data.map((element, index) => {
-            return (
-                <ItemCard 
-                     key={index} 
-                     name={element.name} 
-                     imageName={element.ImageName}
-                     price={element.price}
-                />
-            );
-        })}
-        </View>
+      <View id="myRenteds">
+        {data1.map((element, index) => (
+          <>
+          <ItemCard 
+            key={index}
+            name={element.name}
+            imageName={element.ImageName}
+            price={element.price}
+          />
+          <TouchableOpacity onPress = {()=>{handleDelete(element.id)}}>delete the item</TouchableOpacity>
+          <TouchableOpacity onpress = {()=>{handleAvailability()}}>müsait yap</TouchableOpacity>
+          </>
+        ))}
+      </View>
+
+      <TouchableOpacity onPress={handleAddItem} activeOpacity={0.7}>
+        <Text>Yeni eşya ekle</Text>
+      </TouchableOpacity>
+
+      <View id="onesIRented">
+        {data2.map((element, index) => (
+          <ItemCard
+            key={index}
+            name={element.name}
+            imageName={element.ImageName}
+            price={element.price}
+          />
+        ))}
+      </View>
     </ScrollView>
+  );
 }

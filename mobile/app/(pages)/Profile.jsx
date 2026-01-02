@@ -6,8 +6,9 @@ export default function Profile(){
     const router = useRouter();
     let data;
     const fetching = async () => {
-        let response = await fetch("api"  /*Burada veri çekilirken url parametresi kullanılacak*/);
-        let data = await response.json();
+        const token = await localStorage.getItem("token");
+        let response = await fetch("http://localhost:3000/api/Profile",{headers:{"Content-Type": "application/json",Authorization: `Bearer ${token}`}});
+        let data = await response.json();//content type işine bakmak lazım
         return data;
     }
     try {
@@ -15,7 +16,7 @@ export default function Profile(){
     } catch (error) {
         console.log(error);
     }
-    const defaultImg = "zxczxczcx"; 
+    const defaultImg = "../assets/profilepics/defaultImage.jpg"; 
     return(
         <View >
             <View>
@@ -45,7 +46,7 @@ export default function Profile(){
             </View>
         </View>
     );
-}
+}//adress kısmı bakılacak
 
 const styles = StyleSheet.create({
     container:{

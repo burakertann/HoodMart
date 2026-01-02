@@ -1,17 +1,17 @@
 import React, { createContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+
 // Context: Verileri tüm uygulamaya dağıtan boru hattı.
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   // --- STATE'LER (ANLIK DURUMLAR) ---
   const [isLoading, setIsLoading] = useState(false); // Uygulama meşgul mü?
-  const [userToken, setUserToken] = useState(null);  // Giriş bileti (Token) var mı?
-  const [userInfo, setUserInfo] = useState(null);    // Kullanıcı bilgileri
+  const [token, setToken] = useState(null);  // Giriş bileti (Token) var mı?
+  //const [userInfo, setUserInfo] = useState(null);    // Kullanıcı bilgileri
 
-  // Backend Adresi (Android emülatör için özel IP: 10.0.2.2)
-  const BASE_URL = a//'http://10.0.2.2:3000/api'; 
+  const BASE_URL = 'http://localhost:3000/api'; 
 
   // --- LOGIN FONKSİYONU ---
   const login = async (email, password) => {
@@ -28,12 +28,12 @@ export const AuthProvider = ({ children }) => {
 
       if (response.ok) {
         // BAŞARILI: Backend token verdi.
-        setUserToken(json.token);
-        setUserInfo(json.user);
+        setToken(json.token);
+        //setUserInfo(json.user);
 
-        // TELEFONA KAYDET (Uygulama kapansa bile gitmez)
-        await AsyncStorage.setItem('userToken', json.token);
-        await AsyncStorage.setItem('userInfo', JSON.stringify(json.user));
+        // TELEFONA KAYDET (Uygulama kapansa bile gitmez) telefona değil bilgisayara kaydedeiyoruz
+        await localStorage.setItem('token',json.token);
+        //await AsyncStorage.setItem('userInfo', JSON.stringify(json.user));
       } else {
         alert("Hata: " + json.message);
       }
@@ -74,9 +74,9 @@ export const AuthProvider = ({ children }) => {
   // --- LOGOUT FONKSİYONU ---
   const logout = async () => {
     setIsLoading(true);
-    setUserToken(null); // State'i temizle
-    await AsyncStorage.removeItem('userToken'); // Hafızayı temizle
-    await AsyncStorage.removeItem('userInfo');
+    setToken(null); // State'i temizle
+    await AsyncStorage.removeItem('token'); // Hafızayı temizle
+    //await AsyncStorage.removeItem('userInfo');
     setIsLoading(false);
   };
 
@@ -85,12 +85,12 @@ export const AuthProvider = ({ children }) => {
     try {
       setIsLoading(true);
       // Hafızada daha önceden kalma token var mı?
-      let token = await AsyncStorage.getItem('userToken');
-      let user = await AsyncStorage.getItem('userInfo');
+      let token = await localStorage.getItem('token');
+      //let user = await AsyncStorage.getItem('userInfo');
 
       if (token) {
-        setUserToken(token); // Varsa state'e geri yükle
-        setUserInfo(JSON.parse(user));
+        setToken(token); // Varsa state'e geri yükle
+        //setUserInfo(JSON.parse(user));
       }
       setIsLoading(false);
     } catch (e) {
@@ -104,7 +104,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ login, logout, isLoading, userToken, userInfo }}>
+    <AuthContext.Provider value={{ login, logout, isLoading, token, userInfo }}>
       {children}
     </AuthContext.Provider>
   );
