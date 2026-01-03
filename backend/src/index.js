@@ -223,7 +223,7 @@ app.get("api/users/address-check",takeUserIDMiddleware(req,res,next),async (req,
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "assets/");
+    cb(null, "../../mobile/assets/itempics");
   },
   filename: function (req, file, cb) {
     cb(null, Date.now() + "_" + file.originalname); // benzersiz isim
@@ -250,6 +250,26 @@ app.post("api/items",upload.single("image"), async (req,res)=>{//burası bakıla
 
 })
 
+
+app.patch("/api/address", takeUserIDMiddleware, async (req, res) => {
+  const { street, number, city, country, neighborhood } = req.body;
+  const userId = req.user.userId;
+
+  const query = `
+    UPDATE adresses SET street = $1, number = $2 ,city = $3 ,country = $4 ,neighborhood = $5 WHERE user_id = $6
+   `;
+
+  const { rows } = await pool.query(query, [
+    street,
+    number,
+    city,
+    country,
+    neighborhood,
+    userId,
+  ]);
+
+  res.json(rows[0]);
+});
 
 
 
