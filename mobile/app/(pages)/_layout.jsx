@@ -39,6 +39,18 @@ export default function TabLayout() {
           ),
         }}
       />
+
+      <Tabs.Screen
+        name='Favorites'
+        options={{
+          title: 'Favorites',
+          tabBarIcon: ({ color, size }) => ( 
+            <Ionicons name="heart" size={size} color={color} />
+          ),     
+        }}
+      >
+
+      </Tabs.Screen>
     </Tabs>
   );
 }

@@ -1,8 +1,10 @@
 import { HeaderHeightContext } from "@react-navigation/elements";
 import React from "react";
-import { View,Text,Image,StyleSheet} from "react-native";
+import { View,Text,Image,StyleSheet,TouchableOpacity} from "react-native";
 
-export default function ItemCard(props){
+export default function ItemCardRental2(props){
+    
+
     return(
         <View style ={styles.container}>
             <View style = {styles.header}>
@@ -10,12 +12,11 @@ export default function ItemCard(props){
                 <Text>{props.userName}</Text>
             </View>
             <Image source={{uri:props.imageName}} style = {styles.itemPic}></Image>
-            <Text>{props.name}</Text>
-            <Text>{props.adress}</Text> 
             <Text>{props.price}</Text>
-
         </View>
-    );//adress kısmına bakacaksın
+
+
+    );
 }
 
 const styles = StyleSheet.create({

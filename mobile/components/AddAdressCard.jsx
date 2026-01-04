@@ -53,7 +53,7 @@ export default function AddAddressCard() {
         Adres Bilgileri
       </Text>
 
-      <TextInput placeholder="Street" value={street} onChangeText={setStreet} />
+      <TextInput placeholder="Street" value={street} onChangeText={setStreet}/>
       <TextInput placeholder="No" value={number} onChangeText={setNumber} />
       <TextInput placeholder="Neighborhood" value={neighborhood} onChangeText={setNeighborhood} />
       <TextInput placeholder="City" value={city} onChangeText={setCity} />

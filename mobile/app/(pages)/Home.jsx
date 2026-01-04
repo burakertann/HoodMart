@@ -9,7 +9,7 @@ import {
   Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import ItemCard from "../../components/ItemCard";
+import ItemCard from "../../components/ItemCardHome";
 
 export default function Home() {
   const [data, setData] = useState([]);
@@ -99,12 +99,17 @@ export default function Home() {
         data={data}
         keyExtractor={(item, index) => index.toString()}
         renderItem={({ item }) => (
-          <ItemCard
+          <ItemCardHome
             name={item.item_name}
             imageName={item.ImageName}
             price={item.price}
             profilePic={item.profile_pic}
             userName={item.user_name}
+            street={item.street}  
+            no={item.no}  
+            city={item.city}  
+            country={item.country}    
+            neighborhood={item.neighborhood}
           />
         )}
         onEndReached={() => fetchData()}

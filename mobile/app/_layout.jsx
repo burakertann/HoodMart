@@ -4,7 +4,7 @@ import { AuthProvider, AuthContext } from '../context/AuthContext'; // Yoluna di
 import { View, ActivityIndicator } from 'react-native';
 
 const InitialLayout = () => {
-  const { userToken, isLoading } = useContext(AuthContext);
+  const { token, isLoading } = useContext(AuthContext);
   const router = useRouter();
   const segments = useSegments();
   
@@ -21,14 +21,14 @@ const InitialLayout = () => {
     const inAuthGroup = segments[0] === '(auth)'; // Klasör ismin '(auth)' ise burayı düzelt
     const inPublicGroup = segments[0] === undefined || segments[0] === 'index';
 
-    if (!userToken && !inAuthGroup && !inPublicGroup) {
+    if (!token && !inAuthGroup && !inPublicGroup) {
       // Token yoksa ve auth grubunda değilse -> Login'e git
       router.replace('/login');
-    } else if (userToken && inAuthGroup) {
+    } else if (token && inAuthGroup) {
       // Token varsa ve hala login sayfasındaysa -> Home'a git
       router.replace('/home');
     }
-  }, [userToken, segments, isLoading, rootNavigationState]); // Dependency array'e rootNavigationState eklendi
+  }, [token, segments, isLoading, rootNavigationState]); // Dependency array'e rootNavigationState eklendi
 
   // Yüklenme ekranı
   if (isLoading) {
@@ -44,6 +44,7 @@ const InitialLayout = () => {
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="(auth)" options={{ headerShown: false }} />
       <Stack.Screen name="(pages)" options={{ headerShown: false }} />
+      <Stack.Screen name="Forms" options={{ headerShown: false }} />
     </Stack>
   );
 };

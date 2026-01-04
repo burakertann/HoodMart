@@ -12,6 +12,8 @@ const pool = new pg.Pool(
 const app = express();
 app.use(express.json());
 app.use(cors());
+//app.use(express.urlencoded({ extended: true }));
+
 const JWT_SECRET = process.env.JWT_SECRET;
 const PORT = process.env.PORT;
 // Gerçek projede burası MongoDB veya PostgreSQL olacak.
@@ -89,18 +91,29 @@ app.get("/api/Home", async (req, res) => {
 
     // 3️⃣ SQL sorgusu
     const query = `
-      SELECT
-  i.id,
-  i.name AS item_name,
-  i.image_name AS "ImageName",
-  i.price,
-  u.profile_pic,
-  u.name AS user_name
-FROM items i
-JOIN users u ON i.user_id = u.id
-WHERE i.name ILIKE $1
-ORDER BY i.id
-LIMIT $2 OFFSET $3;
+       SELECT
+        i.id,
+        i.name AS item_name,
+        i.image_name AS "ImageName",
+        i.price,
+
+        u.id AS user_id,
+        u.profile_pic,
+        u.name AS user_name,
+
+        a.street,
+        a.no,
+        a.city,
+        a.country,
+        a.neighborhood
+
+      FROM items i
+      JOIN users u ON i.user_id = u.id
+      LEFT JOIN addresses a ON a.user_id = u.id
+
+      WHERE i.name ILIKE $1
+      ORDER BY i.id
+      LIMIT $2 OFFSET $3;
     `;
 
     // 4️⃣ Veritabanından çek
@@ -120,7 +133,7 @@ LIMIT $2 OFFSET $3;
 
 
 
-function takeUserIDMiddleware(req, res, next) {
+const takeUserIDMiddleware = (req, res, next) => {
   // 1️⃣ Header var mı?
   const authHeader = req.headers.authorization;
 
@@ -170,7 +183,9 @@ function takeUserIDMiddleware(req, res, next) {
   }
 }
 
-app.get("/api/Rental", takeUserIDMiddleware(res,req,next),async (res,req) =>{
+app.use(takeUserIDMiddleware);  
+
+app.get("/api/Rental", takeUserIDMiddleware,async (res,req) =>{
     if(!req.query.flag){
         return res.status(500).json({
             message : "Hata: Rental API query parameter almalı"
@@ -191,7 +206,7 @@ app.get("/api/Rental", takeUserIDMiddleware(res,req,next),async (res,req) =>{
 })
 
 
-app.patch("/api/Profile/MailChange",takeUserIDMiddleware(req,res,next),async (req,res)=>{
+app.patch("/api/Profile/MailChange",takeUserIDMiddleware,async (req,res)=>{
         const userID = req.user.userId;
         const query = "UPDATE users SET email = $1 WHERE id = $2";
         await pool.query(query,[req.body.email,userID]);
@@ -200,7 +215,7 @@ app.patch("/api/Profile/MailChange",takeUserIDMiddleware(req,res,next),async (re
         })
 })
 
-app.patch("/api/Profile/NameChange",takeUserIDMiddleware(req,res,next),async (req,res)=>{
+app.patch("/api/Profile/NameChange",takeUserIDMiddleware,async (req,res)=>{
         const userID = req.user.userId;
         const query = "UPDATE users SET name = $1 WHERE id = $2";
         await pool.query(query,[req.body.name,userID]);
@@ -209,7 +224,7 @@ app.patch("/api/Profile/NameChange",takeUserIDMiddleware(req,res,next),async (re
         })
 });
 
-app.get("api/users/address-check",takeUserIDMiddleware(req,res,next),async (req,res)=>{
+app.get("/api/users/address-check",takeUserIDMiddleware,async (req,res)=>{
     const userID = req.user.userId;
     const query = "SELECT * FROM users u adresses a WHERE u.id = a.id AND u.is = $1"
     const {rows} = await pool.query(query,[userID]);
@@ -232,7 +247,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-app.post("api/items",upload.single("image"), async (req,res)=>{//burası bakılacak
+app.post("/api/items",upload.single("image"), async (req,res)=>{//burası bakılacak
   const { name, price, description } = req.body;
   const imageName = req.file.filename;
 
@@ -271,7 +286,66 @@ app.patch("/api/address", takeUserIDMiddleware, async (req, res) => {
   res.json(rows[0]);
 });
 
+app.get("/api/Profile", takeUserIDMiddleware, async (req, res) => { 
+  const userId = req.user.userId; 
+  const query = ` 
+    SELECT u.name, u.email, u.profile_pic AS profilePic, a.street, a.no, a.city, a.country, a.neighborhood   
+    FROM users u addresses a 
+    WHERE u.id = $1 AND u.id = a.user_id  
+  `;  
+  const { rows } = await pool.query(query, [userId]); 
+  res.json(rows[0]);  
+}); 
 
+
+app.delete("/api/Rentals/delete-item", takeUserIDMiddleware, async (req, res) => {
+    const itemID = req.query.itemID;
+    const userID = req.user.userId;
+    const query = "DELETE FROM items WHERE id = $1 AND user_id = $2"
+    await pool.query(query,[itemID,userID]);
+    res.json({
+        message:"Item deleted successfully"
+    })  
+});
+
+app.patch("/api/Rentals/toggle-availability", takeUserIDMiddleware, async (req, res) => {
+    const itemID = req.query.itemID;
+    const userID = req.user.userId; 
+    const query = "UPDATE items SET available = NOT available WHERE id = $1 AND user_id = $2 RETURNING available";
+    const {rows} = await pool.query(query,[itemID,userID]); 
+    res.json({  
+        available: rows[0].available  
+    });})  
+    
+
+app.post("/api/Favorites/add-favorite", takeUserIDMiddleware, async (req, res) => { 
+    const userID = req.user.userId; 
+    const { itemId } = req.body;  
+    const query = "INSERT INTO favorites (user_id, item_id) VALUES ($1, $2)";
+    await pool.query(query, [userID, itemId]);
+    res.json({ message: "Favorilere eklendi" });
+});
+
+app.post("/api/Requests/add-request", takeUserIDMiddleware, async (req, res) => { 
+    const userID = req.user.userId; 
+    const { itemId } = req.body;  
+    const query = "INSERT INTO requests (user_id, item_id) VALUES ($1, $2)";
+    await pool.query(query, [userID, itemId]);
+    res.json({ message: "İstek gönderildi" });
+});
+
+app.get("/api/Requests/get-requests", takeUserIDMiddleware, async (req, res) => {
+    console.log("doldur");
+});
+
+app.patch("/api/Requests/give-item", takeUserIDMiddleware, async (req, res) => { 
+    const userID = req.query.userID;
+    const itemID = req.user.itemId;
+
+    const query = "";//doldurulacak
+    await pool.query(query, []);
+    res.json({ message: "Item given to requester" });
+}); 
 
 // Sunucuyu Başlat
 app.listen(PORT, () => {

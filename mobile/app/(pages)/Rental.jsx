@@ -1,3 +1,9 @@
+import React from "react";
+import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import { useRouter } from "expo-router";
+import ItemCardRental1 from "../../components/ItemCardRental1"; 
+
+
 export default function Rental() {
   const router = useRouter();
   const [data1, setData1] = React.useState([]);
@@ -60,14 +66,12 @@ export default function Rental() {
       <View id="myRenteds">
         {data1.map((element, index) => (
           <>
-          <ItemCard 
+          <ItemCardRental1 
             key={index}
             name={element.name}
             imageName={element.ImageName}
             price={element.price}
           />
-          <TouchableOpacity onPress = {()=>{handleDelete(element.id)}}>delete the item</TouchableOpacity>
-          <TouchableOpacity onpress = {()=>{handleAvailability()}}>müsait yap</TouchableOpacity>
           </>
         ))}
       </View>
@@ -78,7 +82,7 @@ export default function Rental() {
 
       <View id="onesIRented">
         {data2.map((element, index) => (
-          <ItemCard
+          <ItemCardRental2
             key={index}
             name={element.name}
             imageName={element.ImageName}
